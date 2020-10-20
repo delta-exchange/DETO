@@ -80,4 +80,18 @@ contract('Token', (accounts) => {
       }), 'MinterRole: caller does not have the Minter role')
   });
 
+  it('should be able to burn', async () => {
+    user1 = accounts[2];
+
+    await token.transfer(user1, new BN(10), { from: tokenOwner});
+
+    await token.burn(new BN(3), { from: user1});
+
+    const totalSupply = await token.totalSupply();
+    const user1Balance = await token.balanceOf(user1);
+
+    expect(user1Balance).to.be.bignumber.equal(new BN(7));
+    expect(totalSupply).to.be.bignumber.equal(new BN(7));
+  });
+
 });
