@@ -64,8 +64,7 @@ contract Vesting {
     require(unreleasedTokens <= contractTokens, "TokenVesting: Total amount allocated should be less than tokens in contract");
 
     startTimes[beneficiary] = startTime;
-    amounts[beneficiary] = amount;
-    releasedTokens[beneficiary] = 0;
+    amounts[beneficiary] = amounts[beneficiary].add(amount);
     beneficiaryGrant[beneficiary] = grantName;
   }
 
