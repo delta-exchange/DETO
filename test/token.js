@@ -1,15 +1,20 @@
 const Token = artifacts.require("Token");
 const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { assert, expect } = require('chai');
+const timeMachine = require('ganache-time-traveler');
+
+const months18 = 1.5*365*24*3600;
+const quarter = 0.25*365*24*3600;
 
 contract('Token', (accounts) => {
   let token;
 
   const tokenOwner = accounts[0];
   const mintReciever = accounts[1];
+  const currentTime = Math.floor((new Date()).getTime() / 1000);
 
   beforeEach("get deployed token", async function () {
-    token = await Token.new(new BN(10), { from: tokenOwner });
+    token = await Token.new(new BN(10), new BN(currentTime), new BN(0), new BN(100), new BN(1000), { from: tokenOwner });
   });
 
   it('has a name', async function () {
@@ -55,16 +60,16 @@ contract('Token', (accounts) => {
 
   it('should mint tokens to an address correctly ', async () => {
     const userTokenBefore = await token.balanceOf(mintReciever);
-    const mintReciept = await token.mint(mintReciever, web3.utils.toWei("10"), {
+    const mintReciept = await token.mint(mintReciever, new BN(10), {
       from: tokenOwner
     });
     const userTokenAfter = await token.balanceOf(mintReciever);
-    var difference = (userTokenAfter / (10 ** 18)) - (userTokenBefore / (10 ** 18));
+    var difference = userTokenAfter - userTokenBefore;
     assert.strictEqual(difference.toString(), "10");
   });
 
   it('should not be able to mint tokens after reaching hardcap ', async () => {
-    token2 = await Token.new(web3.utils.toWei("1000000"), { from: tokenOwner });
+    token2 = await Token.new(web3.utils.toWei("1000000"),new BN(currentTime), new BN(0), web3.utils.toWei("1000000000"), web3.utils.toWei("1000000000"), { from: tokenOwner });
     await token2.mint(mintReciever, web3.utils.toWei("99000000"), {
       from: tokenOwner
     });
@@ -92,6 +97,99 @@ contract('Token', (accounts) => {
 
     expect(user1Balance).to.be.bignumber.equal(new BN(7));
     expect(totalSupply).to.be.bignumber.equal(new BN(7));
+  });
+
+});
+
+contract('Token: Time tests', (accounts) => {
+  let token;
+  const tokenOwner = accounts[0];
+  const mintReciever = accounts[1];
+  const currentTime = Math.floor((new Date()).getTime() / 1000);
+
+  beforeEach('setup', async function () {
+    let snapshot = await timeMachine.takeSnapshot();
+    snapshotId = snapshot['result'];
+
+    token = await Token.new(new BN(500), new BN(currentTime), new BN(months18), new BN(100), new BN(700), { from: accounts[0] });
+
+  })
+
+  afterEach(async() => {
+    await timeMachine.revertToSnapshot(snapshotId);
+  });
+
+  it('should not allow minting before mint cliff', async () => {
+    await timeMachine.advanceTimeAndBlock(months18-100);
+    await expectRevert(token.mint(mintReciever, new BN(10), {
+      from: tokenOwner
+    }), 'No minting allowed before mint cliff');
+  });
+
+  it('should allow minting after mint cliff', async () => {
+    await timeMachine.advanceTimeAndBlock(months18+1);
+    const userTokenBefore = await token.balanceOf(mintReciever);
+    const mintReciept = await token.mint(mintReciever, new BN(10), {
+      from: tokenOwner
+    });
+    const userTokenAfter = await token.balanceOf(mintReciever);
+    var difference = userTokenAfter - userTokenBefore;
+    assert.strictEqual(difference.toString(), "10");
+  });
+
+  it('should return quarter start time correctly', async () => {
+    await timeMachine.advanceTimeAndBlock(30*24*3600);
+    quarterStartTime = await token.getQuarterStartTime();
+    assert.strictEqual(quarterStartTime.toString(), currentTime.toString());
+
+    await timeMachine.advanceTimeAndBlock(quarter);
+    nextQuarterStart = currentTime + quarter;
+    quarterStartTime = await token.getQuarterStartTime();
+    assert.strictEqual(quarterStartTime.toString(), nextQuarterStart.toString());
+  });
+
+  it('should not allow minting if exceeds quarter cap', async () => {
+    await timeMachine.advanceTimeAndBlock(months18+1);
+    const userTokenBefore = await token.balanceOf(mintReciever);
+    const mintReciept = await token.mint(mintReciever, new BN(10), {
+      from: tokenOwner
+    });
+    await expectRevert(token.mint(mintReciever, new BN(91), {
+      from: tokenOwner
+    }), 'Limit exceeded for minting this quarter');
+  });
+
+  it('should allow minting upto quarter cap in next quarter', async () => {
+    await timeMachine.advanceTimeAndBlock(months18+1);
+    await token.mint(mintReciever, new BN(100), {
+      from: tokenOwner
+    });
+
+    await timeMachine.advanceTimeAndBlock(quarter);
+    const userTokenBefore = await token.balanceOf(mintReciever);
+    await token.mint(mintReciever, new BN(100), {
+      from: tokenOwner
+    });
+    const userTokenAfter = await token.balanceOf(mintReciever);
+    var difference = userTokenAfter - userTokenBefore;
+    assert.strictEqual(difference.toString(), "100");
+  });
+
+  it('should not allow minting after minting cap has reached', async () => {
+    await timeMachine.advanceTimeAndBlock(months18+1);
+    await token.mint(mintReciever, new BN(100), {
+      from: tokenOwner
+    });
+
+    await timeMachine.advanceTimeAndBlock(quarter);
+    await token.mint(mintReciever, new BN(100), {
+      from: tokenOwner
+    });
+
+    await timeMachine.advanceTimeAndBlock(quarter);
+    await expectRevert(token.mint(mintReciever, new BN(1), {
+      from: tokenOwner
+    }), 'Mint cap reached');
   });
 
 });

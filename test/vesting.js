@@ -22,7 +22,8 @@ contract('Vesting: Start', (accounts) => {
     let snapshot = await timeMachine.takeSnapshot();
     snapshotId = snapshot['result'];
 
-    token = await Token.new(new BN(1000), { from: accounts[0] });
+    token = await Token.new(new BN(1000), new BN(0), new BN(0), new BN(10000), new BN(10000), { from: accounts[0] });
+
     vestingInstance = await Vesting.new(token.address);
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]})
 
@@ -90,7 +91,8 @@ contract('Vesting: Mid cliff', (accounts) => {
     let snapshot = await timeMachine.takeSnapshot();
     snapshotId = snapshot['result'];
 
-    token = await Token.new(new BN(1000), { from: accounts[0] });
+    token = await Token.new(new BN(1000), new BN(0), new BN(0), new BN(10000), new BN(10000), { from: accounts[0] });
+
     vestingInstance = await Vesting.new(token.address);
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]})
 
@@ -148,7 +150,8 @@ contract('Vesting: Post cliff', (accounts) => {
     let snapshot = await timeMachine.takeSnapshot();
     snapshotId = snapshot['result'];
 
-    token = await Token.new(new BN(1000), { from: accounts[0] });
+    token = await Token.new(new BN(1000), new BN(0), new BN(0), new BN(10000), new BN(10000), { from: accounts[0] });
+
     vestingInstance = await Vesting.new(token.address);
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]});
 
@@ -209,7 +212,8 @@ contract('Vesting: Post cliff second release', (accounts) => {
     let snapshot = await timeMachine.takeSnapshot();
     snapshotId = snapshot['result'];
 
-    token = await Token.new(new BN(1000), { from: accounts[0] });
+    token = await Token.new(new BN(1000), new BN(0), new BN(0), new BN(10000), new BN(10000), { from: accounts[0] });
+
     vestingInstance = await Vesting.new(token.address);
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]});
 
@@ -274,7 +278,8 @@ contract('Vesting: Post vesting duration', (accounts) => {
     let snapshot = await timeMachine.takeSnapshot();
     snapshotId = snapshot['result'];
 
-    token = await Token.new(new BN(1000), { from: accounts[0] });
+    token = await Token.new(new BN(1000), new BN(0), new BN(0), new BN(10000), new BN(10000), { from: accounts[0] });
+
     vestingInstance = await Vesting.new(token.address);
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]});
 
