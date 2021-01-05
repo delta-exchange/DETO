@@ -13,6 +13,10 @@ import "./Token.sol";
 contract Vesting {
   using SafeMath for uint256;
 
+  event tokensVested(address indexed _to, uint256 _amount, string _grantName);
+  event tokensReleased(address indexed _invoker, address indexed _beneficiary, uint256 _amount);
+  event grantAdded(string _grantName, uint256 _cliff, uint256 _duration);
+
   // The vesting schedule is time-based (i.e. using block timestamps as opposed to e.g. block numbers), and is
   // therefore sensitive to timestamp manipulation (which is something miners can do, to a certain degree). Therefore,
   // it is recommended to avoid using short time durations (less than a minute). Typical vesting schemes, with a
@@ -51,6 +55,8 @@ contract Vesting {
     });
 
     grants[grantName] = grant;
+
+    emit grantAdded(grantName, cliff, duration);
   }
 
   function vestTokens(address beneficiary, uint256 amount, string memory grantName, uint256 startTime) onlyOwner public  {
@@ -66,6 +72,8 @@ contract Vesting {
     startTimes[beneficiary] = startTime;
     amounts[beneficiary] = amounts[beneficiary].add(amount);
     beneficiaryGrant[beneficiary] = grantName;
+
+    emit tokensVested(beneficiary, amount, grantName);
   }
 
   /**
@@ -119,6 +127,8 @@ contract Vesting {
 
     unreleasedTokens = unreleasedTokens.sub(unreleased);
     token.transfer(beneficiary, unreleased);
+
+    emit tokensReleased(msg.sender, beneficiary, unreleased);
   }
 
   /**
