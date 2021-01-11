@@ -63,7 +63,7 @@ contract Vesting {
     require(beneficiary != address(0), "TokenVesting: beneficiary is the zero address");
 
     Grant memory grant = grants[grantName];
-    require(startTime.add(grant.duration) > block.timestamp, "TokenVesting: final time is before current time");
+    require(startTime.add(grant.cliff).add(grant.duration) > block.timestamp, "TokenVesting: final time is before current time");
 
     unreleasedTokens = unreleasedTokens.add(amount);
     uint256 contractTokens = token.balanceOf(address(this));
