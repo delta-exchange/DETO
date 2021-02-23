@@ -50,8 +50,13 @@ contract Token is ERC20, ERC20Detailed, ERC20Burnable, ERC20Mintable, ERC20Pausa
   }
 
   function getQuarterStartTime() public view returns (uint256){
-    uint256 quarter = 0.25*(365 days);
-    return _startTime + ((block.timestamp - _startTime)/(quarter))*(quarter);
+    uint256 cliffEndTime = _startTime.add(_mintCliff);
+    if( block.timestamp < cliffEndTime ){
+      return cliffEndTime;
+    } else{
+      uint256 quarter = 0.25*(365 days);
+      return cliffEndTime + ((block.timestamp - cliffEndTime)/(quarter))*(quarter);
+    }
   }
 
   function getMaxMintable(uint256 quarterStartTime) public view returns (uint256){

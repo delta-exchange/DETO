@@ -138,12 +138,12 @@ contract('Token: Time tests', (accounts) => {
   });
 
   it('should return quarter start time correctly', async () => {
-    await timeMachine.advanceTimeAndBlock(30*24*3600);
+    await timeMachine.advanceTimeAndBlock(months18 + 30*24*3600);
     quarterStartTime = await token.getQuarterStartTime();
-    assert.strictEqual(quarterStartTime.toString(), currentTime.toString());
+    assert.strictEqual(quarterStartTime.toString(), (currentTime + months18).toString());
 
     await timeMachine.advanceTimeAndBlock(quarter);
-    nextQuarterStart = currentTime + quarter;
+    nextQuarterStart = currentTime + months18 + quarter;
     quarterStartTime = await token.getQuarterStartTime();
     assert.strictEqual(quarterStartTime.toString(), nextQuarterStart.toString());
   });
