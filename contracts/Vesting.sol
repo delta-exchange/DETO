@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -10,23 +10,18 @@ import "./Token.sol";
  * typical vesting scheme, with a cliff and vesting period
  */
 
+// The vesting schedule is time-based (i.e. using block timestamps as opposed to e.g. block numbers), and is
+// therefore sensitive to timestamp manipulation (which is something miners can do, to a certain degree). Therefore,
+// it is recommended to avoid using short time durations (less than a minute). Typical vesting schemes, with a
+// cliff period of a year and a duration of four years, are safe to use.
+// solhint-disable not-rely-on-time
+
 contract Vesting {
   using SafeMath for uint256;
 
-  event tokensVested(address indexed _to, uint256 _amount, string _grantName);
-  event tokensReleased(address indexed _invoker, address indexed _beneficiary, uint256 _amount);
-  event grantAdded(string _grantName, uint256 _cliff, uint256 _duration);
-
-  // The vesting schedule is time-based (i.e. using block timestamps as opposed to e.g. block numbers), and is
-  // therefore sensitive to timestamp manipulation (which is something miners can do, to a certain degree). Therefore,
-  // it is recommended to avoid using short time durations (less than a minute). Typical vesting schemes, with a
-  // cliff period of a year and a duration of four years, are safe to use.
-  // solhint-disable not-rely-on-time
-
-  modifier onlyOwner { require(msg.sender == owner); _; }
-
   address private owner;
   Token private token;
+  uint256 private unreleasedTokens;
 
   // Durations and timestamps are expressed in UNIX time, the same units as block.timestamp.
   struct Grant {
@@ -39,7 +34,12 @@ contract Vesting {
   mapping (address => uint256) private releasedTokens;
   mapping (address => string ) private beneficiaryGrant;
   mapping (string => Grant) private grants;
-  uint256 private unreleasedTokens;
+
+  event tokensVested(address indexed _to, uint256 _amount, string _grantName);
+  event tokensReleased(address indexed _invoker, address indexed _beneficiary, uint256 _amount);
+  event grantAdded(string _grantName, uint256 _cliff, uint256 _duration);
+
+  modifier onlyOwner { require(msg.sender == owner); _; }
 
   constructor(address tokenAddress) public {
     token = Token(tokenAddress);
@@ -59,15 +59,29 @@ contract Vesting {
     emit grantAdded(grantName, cliff, duration);
   }
 
-  function vestTokens(address beneficiary, uint256 amount, string memory grantName, uint256 startTime) onlyOwner public  {
+  function vestTokens(
+    address beneficiary,
+    uint256 amount,
+    string memory grantName,
+    uint256 startTime
+  ) 
+    onlyOwner
+    public
+  {
     require(beneficiary != address(0), "TokenVesting: beneficiary is the zero address");
 
     Grant memory grant = grants[grantName];
-    require(startTime.add(grant.cliff).add(grant.duration) > block.timestamp, "TokenVesting: final time is before current time");
+    require(
+      startTime.add(grant.cliff).add(grant.duration) > block.timestamp,
+      "TokenVesting: final time is before current time"
+    );
 
     unreleasedTokens = unreleasedTokens.add(amount);
     uint256 contractTokens = token.balanceOf(address(this));
-    require(unreleasedTokens <= contractTokens, "TokenVesting: Total amount allocated should be less than tokens in contract");
+    require(
+      unreleasedTokens <= contractTokens,
+      "TokenVesting: Total amount allocated should be less than tokens in contract"
+    );
 
     startTimes[beneficiary] = startTime;
     amounts[beneficiary] = amounts[beneficiary].add(amount);
@@ -79,14 +93,14 @@ contract Vesting {
   /**
     * @return the start time of the token vesting.
     */
-  function startTime(address beneficiary) public view returns (uint256) {
+  function startTime(address beneficiary) external view returns (uint256) {
     return startTimes[beneficiary];
   }
 
   /**
     * @return the cliff time of the token vesting.
     */
-  function cliff(address beneficiary) public view returns (uint256) {
+  function cliff(address beneficiary) external view returns (uint256) {
     string memory grantName = beneficiaryGrant[beneficiary];
     return grants[grantName].cliff;
   }
@@ -94,7 +108,7 @@ contract Vesting {
   /**
     * @return the duration of the token vesting.
     */
-  function duration(address beneficiary) public view returns (uint256) {
+  function duration(address beneficiary) external view returns (uint256) {
     string memory grantName = beneficiaryGrant[beneficiary];
     return grants[grantName].duration;
   }
@@ -102,22 +116,25 @@ contract Vesting {
   /**
     * @return the amount of the tokens alloted .
     */
-  function amount(address beneficiary) public view returns (uint256) {
+  function amount(address beneficiary) external view returns (uint256) {
     return amounts[beneficiary];
   }
 
   /**
     * @return the amount of the token released.
     */
-  function releasedAmount(address beneficiary) public view returns (uint256) {
+  function releasedAmount(address beneficiary) external view returns (uint256) {
     return releasedTokens[beneficiary];
   }
 
   /**
     * @notice Transfers vested tokens to beneficiary.
     */
-  function release(address beneficiary) public {
-    require(msg.sender == owner || msg.sender == beneficiary, "TokenVesting: Tokens can be released only by owner or beneficiary");
+  function release(address beneficiary) external {
+    require(
+      msg.sender == owner || msg.sender == beneficiary,
+      "TokenVesting: Tokens can be released only by owner or beneficiary"
+    );
 
     uint256 unreleased = releasableAmount(beneficiary);
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -9,17 +9,31 @@ import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Capped.sol";
 
 contract Token is ERC20, ERC20Detailed, ERC20Burnable, ERC20Mintable, ERC20Pausable, ERC20Capped {
-  uint256 _startTime;
-  uint256 _mintCliff;
+  uint256 public _startTime;
+  uint256 public _mintCliff;
 
-  uint256 _tokensMintedInQuarter;
-  uint256 _maxMintPerQuarter;
-  uint256 _lastMintTime;
+  uint256 public _tokensMintedInQuarter;
+  uint256 public _maxMintPerQuarter;
+  uint256 public _lastMintTime;
 
-  uint256 _tokensMintedTotal;
-  uint256 _tokensMintCap;
+  uint256 public _tokensMintedTotal;
+  uint256 public _tokensMintCap;
 
-  constructor(uint256 initialSupply, uint256 startTime, uint256 mintCliff, uint256 maxMintPerQuarter, uint256 tokensMintCap) public ERC20Detailed("Delta Token", "DETO", 18) ERC20Capped(100*(10**6)*(10**18)) {
+  constructor(
+    uint256 initialSupply,
+    uint256 startTime,
+    uint256 mintCliff,
+    uint256 maxMintPerQuarter,
+    uint256 tokensMintCap
+  ) 
+    public
+    ERC20Detailed(
+      "Delta Token",
+      "DETO",
+      18
+    )
+    ERC20Capped(100*(10**6)*(10**18))
+  {
     _startTime = startTime;
     _mintCliff = mintCliff;
     _maxMintPerQuarter = maxMintPerQuarter;
