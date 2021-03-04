@@ -28,12 +28,12 @@ contract('Vesting: Start', (accounts) => {
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]})
 
     // function addVestingGrant(string memory grantName, uint256 cliff, uint256 duration)
-    await vestingInstance.addVestingGrant("private_sale", 1000, 2000, { from: accounts[0] });
-    await vestingInstance.addVestingGrant("founders", 2000, 3000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("private_sale"), 1000, 2000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("founders"), 2000, 3000, { from: accounts[0] });
     
     // function vestTokens(address beneficiary, uint256 amount, string memory grantName, uint256 startTime)
     currentTime = Math.floor((new Date()).getTime() / 1000);
-    await vestingInstance.vestTokens(accounts[1], 1000, "founders", currentTime, { from: accounts[0] });
+    await vestingInstance.vestTokens(accounts[1], 1000, web3.utils.fromUtf8("founders"), currentTime, { from: accounts[0] });
   })
 
   afterEach(async() => {
@@ -41,7 +41,7 @@ contract('Vesting: Start', (accounts) => {
   });
 
   it('should throw error if trying to allot more tokens than available', async () => {
-    await expectRevert(vestingInstance.vestTokens(accounts[2], 5, "founders", currentTime, { from: accounts[0] }), "TokenVesting: Total amount allocated should be less than tokens in contract");
+    await expectRevert(vestingInstance.vestTokens(accounts[2], 5, web3.utils.fromUtf8("founders"), currentTime, { from: accounts[0] }), "TokenVesting: Total amount allocated should be less than tokens in contract");
   });
 
   it('should return start time of allotted tokens to an address correctly ', async () => {
@@ -97,12 +97,12 @@ contract('Vesting: Mid cliff', (accounts) => {
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]})
 
     // function addVestingGrant(string memory grantName, uint256 cliff, uint256 duration)
-    await vestingInstance.addVestingGrant("private_sale", 1000, 2000, { from: accounts[0] });
-    await vestingInstance.addVestingGrant("founders", 2000, 3000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("private_sale"), 1000, 2000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("founders"), 2000, 3000, { from: accounts[0] });
     
     // function vestTokens(address beneficiary, uint256 amount, string memory grantName, uint256 startTime)
     currentTime = Math.floor((new Date()).getTime() / 1000);
-    await vestingInstance.vestTokens(accounts[1], 1000, "founders", currentTime, { from: accounts[0] });
+    await vestingInstance.vestTokens(accounts[1], 1000, web3.utils.fromUtf8("founders"), currentTime, { from: accounts[0] });
     // console.log(currentTime.toString());
     // console.log((await vestingInstance.getBlock()).toString());
 
@@ -156,12 +156,12 @@ contract('Vesting: Post cliff', (accounts) => {
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]});
 
     // function addVestingGrant(string memory grantName, uint256 cliff, uint256 duration)
-    await vestingInstance.addVestingGrant("private_sale", 1000, 2000, { from: accounts[0] });
-    await vestingInstance.addVestingGrant("founders", 2000, 3000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("private_sale"), 1000, 2000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("founders"), 2000, 3000, { from: accounts[0] });
     
     // function vestTokens(address beneficiary, uint256 amount, string memory grantName, uint256 startTime)
     currentTime = Math.floor((new Date()).getTime() / 1000);
-    await vestingInstance.vestTokens(accounts[1], 1000, "founders", currentTime, { from: accounts[0] });
+    await vestingInstance.vestTokens(accounts[1], 1000, web3.utils.fromUtf8("founders"), currentTime, { from: accounts[0] });
     // console.log(currentTime.toString());
     // console.log((await vestingInstance.getBlock()).toString());
 
@@ -218,12 +218,12 @@ contract('Vesting: Post cliff second release', (accounts) => {
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]});
 
     // function addVestingGrant(string memory grantName, uint256 cliff, uint256 duration)
-    await vestingInstance.addVestingGrant("private_sale", 1000, 2000, { from: accounts[0] });
-    await vestingInstance.addVestingGrant("founders", 2000, 3000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("private_sale"), 1000, 2000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("founders"), 2000, 3000, { from: accounts[0] });
     
     // function vestTokens(address beneficiary, uint256 amount, string memory grantName, uint256 startTime)
     currentTime = Math.floor((new Date()).getTime() / 1000);
-    await vestingInstance.vestTokens(accounts[1], 1000, "founders", currentTime, { from: accounts[0] });
+    await vestingInstance.vestTokens(accounts[1], 1000, web3.utils.fromUtf8("founders"), currentTime, { from: accounts[0] });
     // console.log(currentTime.toString());
     // console.log((await vestingInstance.getBlock()).toString());
 
@@ -284,12 +284,12 @@ contract('Vesting: Post vesting duration', (accounts) => {
     await token.transfer(vestingInstance.address, new BN(1000), { from: accounts[0]});
 
     // function addVestingGrant(string memory grantName, uint256 cliff, uint256 duration)
-    await vestingInstance.addVestingGrant("private_sale", 1000, 2000, { from: accounts[0] });
-    await vestingInstance.addVestingGrant("founders", 2000, 3000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("private_sale"), 1000, 2000, { from: accounts[0] });
+    await vestingInstance.addVestingGrant(web3.utils.fromUtf8("founders"), 2000, 3000, { from: accounts[0] });
     
     // function vestTokens(address beneficiary, uint256 amount, string memory grantName, uint256 startTime)
     currentTime = Math.floor((new Date()).getTime() / 1000);
-    await vestingInstance.vestTokens(accounts[1], 1000, "founders", currentTime, { from: accounts[0] });
+    await vestingInstance.vestTokens(accounts[1], 1000, web3.utils.fromUtf8("founders"), currentTime, { from: accounts[0] });
     // console.log(currentTime.toString());
     // console.log((await vestingInstance.getBlock()).toString());
 
@@ -349,8 +349,8 @@ contract('Vesting: Post vesting duration', (accounts) => {
 //   before('Deploy Contract', async() => {
 //       token = await Token.new(new BN(1000), { from: accounts[0] });
 //       vestingInstance = await Vesting.new(token.address);
-//       vestingInstance.addVestingGrant.call("private_sale", 1000, 2000, { from: accounts[0] });
-//       vestingInstance.addVestingGrant.call("founders", 2000, 3000, { from: accounts[0] });
+//       vestingInstance.addVestingGrant.call(web3.utils.fromUtf8("private_sale"), 1000, 2000, { from: accounts[0] });
+//       vestingInstance.addVestingGrant.call(web3.utils.fromUtf8("founders"), 2000, 3000, { from: accounts[0] });
 //   });
 
 //   /* ADD TESTS HERE */

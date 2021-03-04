@@ -32,12 +32,12 @@ contract Vesting {
   mapping (address => uint256 ) private startTimes;
   mapping (address => uint256) private amounts;
   mapping (address => uint256) private releasedTokens;
-  mapping (address => string ) private beneficiaryGrant;
-  mapping (string => Grant) private grants;
+  mapping (address => bytes32 ) private beneficiaryGrant;
+  mapping (bytes32 => Grant) private grants;
 
-  event tokensVested(address indexed _to, uint256 _amount, string _grantName);
+  event tokensVested(address indexed _to, uint256 _amount, bytes32 _grantName);
   event tokensReleased(address indexed _invoker, address indexed _beneficiary, uint256 _amount);
-  event grantAdded(string _grantName, uint256 _cliff, uint256 _duration);
+  event grantAdded(bytes32 _grantName, uint256 _cliff, uint256 _duration);
 
   modifier onlyOwner { require(msg.sender == owner); _; }
 
@@ -46,7 +46,7 @@ contract Vesting {
     owner = msg.sender;
   }
 
-  function addVestingGrant(string memory grantName, uint256 cliff, uint256 duration) onlyOwner public {
+  function addVestingGrant(bytes32 grantName, uint256 cliff, uint256 duration) onlyOwner external {
     require(cliff >= 0, "TokenVesting: cliff is negative");
     require(duration >= 0, "TokenVesting: duration is negative");
     Grant memory grant = Grant({
@@ -62,11 +62,11 @@ contract Vesting {
   function vestTokens(
     address beneficiary,
     uint256 amount,
-    string memory grantName,
+    bytes32 grantName,
     uint256 startTime
   ) 
     onlyOwner
-    public
+    external
   {
     require(beneficiary != address(0), "TokenVesting: beneficiary is the zero address");
 
@@ -101,7 +101,7 @@ contract Vesting {
     * @return the cliff time of the token vesting.
     */
   function cliff(address beneficiary) external view returns (uint256) {
-    string memory grantName = beneficiaryGrant[beneficiary];
+    bytes32 grantName = beneficiaryGrant[beneficiary];
     return grants[grantName].cliff;
   }
 
@@ -109,7 +109,7 @@ contract Vesting {
     * @return the duration of the token vesting.
     */
   function duration(address beneficiary) external view returns (uint256) {
-    string memory grantName = beneficiaryGrant[beneficiary];
+    bytes32 grantName = beneficiaryGrant[beneficiary];
     return grants[grantName].duration;
   }
 
@@ -160,7 +160,7 @@ contract Vesting {
     */
   function vestedAmount(address beneficiary) public view returns (uint256) {
     uint256 totalAmount = amounts[beneficiary];
-    string memory grantName = beneficiaryGrant[beneficiary];
+    bytes32 grantName = beneficiaryGrant[beneficiary];
     Grant memory grant = grants[grantName];
     uint256 start = startTimes[beneficiary];
 
