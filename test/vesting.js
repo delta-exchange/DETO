@@ -40,6 +40,10 @@ contract('Vesting: Start', (accounts) => {
     await timeMachine.revertToSnapshot(snapshotId);
   });
 
+  it('should throw error if trying to vest tokens to existing beneficiary', async () => {
+    await expectRevert(vestingInstance.vestTokens(accounts[1], 5, web3.utils.fromUtf8("founders"), currentTime, { from: accounts[0] }), "TokenVesting: beneficiary already exists");
+  });
+
   it('should throw error if trying to allot more tokens than available', async () => {
     await expectRevert(vestingInstance.vestTokens(accounts[2], 5, web3.utils.fromUtf8("founders"), currentTime, { from: accounts[0] }), "TokenVesting: Total amount allocated should be less than tokens in contract");
   });

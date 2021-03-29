@@ -69,6 +69,7 @@ contract Vesting {
     external
   {
     require(beneficiary != address(0), "TokenVesting: beneficiary is the zero address");
+    require(amounts[beneficiary] == 0, "TokenVesting: beneficiary already exists");
 
     Grant memory grant = grants[grantName];
     require(
@@ -84,7 +85,7 @@ contract Vesting {
     );
 
     startTimes[beneficiary] = startTime;
-    amounts[beneficiary] = amounts[beneficiary].add(amount);
+    amounts[beneficiary] = amount;
     beneficiaryGrant[beneficiary] = grantName;
 
     emit tokensVested(beneficiary, amount, grantName);
