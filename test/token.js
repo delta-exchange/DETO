@@ -19,7 +19,7 @@ contract('Token', (accounts) => {
 
   it('has a name', async function () {
     const name = await token.name();
-    assert.equal(name, 'Delta Token');
+    assert.equal(name, 'Delta Exchange Token');
   });
 
   it('has a symbol', async function () {
@@ -70,7 +70,7 @@ contract('Token', (accounts) => {
 
   it('should not be able to mint tokens after reaching hardcap ', async () => {
     token2 = await Token.new(web3.utils.toWei("1000000"),new BN(currentTime), new BN(0), web3.utils.toWei("1000000000"), web3.utils.toWei("1000000000"), { from: tokenOwner });
-    await token2.mint(mintReciever, web3.utils.toWei("99000000"), {
+    await token2.mint(mintReciever, web3.utils.toWei("749000000"), {
       from: tokenOwner
     });
     await expectRevert(token2.mint(mintReciever, web3.utils.toWei("1"), {

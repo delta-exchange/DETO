@@ -923,7 +923,7 @@ contract Token is ERC20, ERC20Detailed, ERC20Burnable, ERC20Mintable, ERC20Pausa
   ) 
     public
     ERC20Detailed(
-      "Delta Token",
+      "Delta Exchange Token",
       "DETO",
       18
     )
